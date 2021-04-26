@@ -1,0 +1,160 @@
+---
+title: Project Buddy Chess (utopia) — release v0.0 retrospective
+date: 2020-12-10
+tags: ['project', 'buddy-chess']
+---
+
+I made a thing over the last few weeks; https://utopia.buddychess.com/[Buddy Chess  (utopia)^]: A friendly place for your https://en.wikipedia.org/wiki/Bughouse_chess[bughouse chess^] needs.
+Here I will try to compile my notes and retrospective thoughts for future reference.
+
+== A friendly bughouse chess server: Buddy Chess (utopia)
+
+.Buddy Chess (utopia) in action
+[#image:buddy-chess-utopia-screenshot]
+image::buddy-chess-utopia-screenshot.png[]
+
+=== What is bughouse chess?
+
+____
+Bughouse is the _funnest_ of chess variations (citation not needed).
+
+Breaking the solitary mold of chess, bughouse is a chess variation that lets you team up with a buddy for a fast paced chess game where you use your superior strategy and communication to slip through the cracks of opponents defenses.
+
+-- https://utopia.buddychess.com/[Buddy Chess  (utopia)^]
+____
+
+Bughouse is usually played in teams of two. In the seating layout (<<image:bughouse-seating-layout>>), your team mate sits to your side and holds the same color pieces as your opponent.
+
+.Bughouse seating layout
+[#image:bughouse-seating-layout]
+image::bughouse-seating-layout.png[]
+
+Two main twists are introduced to the usual chess rules.
+
+1. All pieces that you capture on your board will be passed to your team mate. You can think of it as these pieces go to your team mate's spare piece stash.
+2. On your turn you can drop a piece from your spare stash on to your board.
+
+That's pretty much it. Read more thoroughly about https://en.wikipedia.org/wiki/Bughouse_chess[bughouse on wikipedia^].
+
+== Backstory
+
+http://lichess.org[Lichess^] is my favourite online chess site due to its https://lichess.org/blog/U4skkUQAAEAAhIGz/why-is-lichess-free[ideals^].
+But sadly lichess team is reluctant to add my favorite chess variation (for good reasons).
+
+____
+Clocks, time controls and ending conditions are the hardest things on the impl side. 
+It's all doable but not a priority because it would make lichess more difficult to maintain and variants are less than 1% of site traffic in general.
+
+We're trying to avoid adding potentially unpopular variants that add complexity to the site, and the bughouse exceptions for mates and clock start are significant.
+
+-- isaacly (lichess contributor) https://lichess.org/forum/team-fics-bughouse/lichess-bughouse-petition#3
+____
+
+Chess.com which has done a great deal for the online chess boom has released support for https://www.chess.com/bughouse[online bughouse^].
+But the UX for a simple game with just 4 friends needs more love.
+
+There was an https://www.youtube.com/watch?v=Q2oxnkwvO_E&t=1s[experimental fork^] of lichess for bughouse at www.bughousetest.com.
+The site was dead the last time I checked.
+During the days it was live there was a small but dedicated community running weekly tournaments.
+If I were to speculate why the site is dead now, I would say the maintence burden of the site was not worth it for the amount of site activity.
+
+With all that said I wanted to add in my own spin to the mix focusing on friendly matches.
+
+== Goals
+
+Playable multiplayer bughouse::
+* Obviously implement the game logic
+* But also have proper UI with
+** Full dual board display fitting into the screen
+** Clock, spare stash and profile view
+** Text and voice chat
+
+Reduce maintanence burden::
+* Try to keep server costs at $0
+** so there's no reason to shutdown the site for inactivity
+* Be careful about features considered to be in scope
+** Keep matchmaking out of scope
+** Keep anti cheat mechanisms out of scope
+** Keep profiles and leader boards out of scope (these usually attracts cheaters)
+
+Target the casual bughouse chess community::
+* As a place to play couple of bughouse matches among a group of friends
+
+Learn a thing or two along the way::
+* It is a side project after all
+
+
+== Plan and execution
+
+. Build an invitational game room system
+. Use P2P message passing for communication and reduce reliance on a central server
+. Extend chess library with bughouse rules
+. Put together bughouse chess board user interface
+. Stitch everything together into a cohesive system
+. Reaching out to the community
+
+== Notes
+
+How to design a website that inevitably needs a lot of horizontal real estate?::
+- For bughouse it is important to be able to view both chess boards in a single screen preferrably with out the need to scroll around.
+- My current solution is by making bold assumptions about the screen ratios.
+- I need to look in to how other games that support different screen ratios pull this off, especially for mobile UI.
+
+Should I have had tried to keep server costs at $0?::
+- *Cons:* In hind sight I realize that I had cut too many corners in the name of keeping costs down.
+I did get to play around with technology like WebRTC.
+But at the end of the day players are coming to play bughouse chess and not WebRTC.
+- *Pros:* Let me validate the idea, get an idea about the problem space and get some feedback. 
+Staying true to the initial goal of keeping costs at $0, this version can be kept alive even in the case that I lose steam behind the project.
+
+Multiplayer player base::
+- As a multiplayer game, it is crucial to have an active player base.
+- Question yet to be answered is if the online bughouse player base is big enough.
+- Before working on a next release, I need to survey current active community to undrestand what are their needs. With this release in my showcase, hopefully I do have some credibility on the matter.
+- We also do have to consider that any casual online chess player is a potential bughouse player.
+
+Matchmaking::
+Matchmaking is a major pain point for the players.
+Both in terms of finding opponents and also in finding good partners.
+For this release I side stepped the problem by letting the players do the match making work themselves.
+But if we are to get serious matchmaking is problem that needs to be addresssed properly.
+
+== Built on shoulders of giants
+
+Chessboard - https://github.com/ornicar/chessground[chessground^]::
+Chessground by the lichess team is a battle tested project used in production at lichess.
+The API code is fully typed and commented which more than made up for lack of a manual.
+I had a hard time understanding themes and css styles.
+But there is enough examples provided to experiment and prototype.
+
+Original chess rules - https://github.com/jhlywa/chess.js[chess.js^]::
+We need to extend traditional chess rules with bughouse chess rules.
+More specifically piece drop conditions and mating conditions.
+Another good option that I didn't get to evaluate is https://github.com/veloce/scalachessjs[schala-chess^] by the lichess team. 
+
+WebRTC: for P2P - https://github.com/feross/simple-peer[simple-peer^]::
+After spending many hours on an iteration using the pure WebRTC API, I ran into browser compatibility quirks.
+So I decided to use a library that provides a nice abstraction on top of the WebRTC API.
+
+Firebase: for peer discovery and signaling - https://firebase.google.com[firebase^]::
+To initiate a WebRTC connection between two peers we need a medium for them to communicate their handshake messages (known as signaling in WebRTC speak).
+This is probably the cheaper choice (stay within $0 budget), but the more sensible choice would have been to use a backend with websockets for real time communication.
+
+Assymetric encryption for public channels - https://github.com/dchest/tweetnacl-js[tweetnacl-js^]::
+Handshake messages contains sensitive information like IP address and device capabilities.
+Many online tutorials that I saw on using firebase as a signaling server seemed to gloss over this privacy leakage.
+My solution to this problem was to use assymetric encryption using transient private-public keys for each player session.
+
+Frontend - https://svelte.dev/[svelte^] and https://tailwindcss.com/[tailwind-css^]::
+I have used this combination for couple of projects now, so I have gotten comfortable with them.
+At the moment I prefer the svelte's approach to reactive front end as it keeps development simple.
+I also like the premise of tailwind's utility first functional css approach.
+
+Github actions: for continous deployment - https://github.com/features/actions[github actions^]::
+Github actions is free for light usage and easy enough to setup.
+
+
+
+
+
+

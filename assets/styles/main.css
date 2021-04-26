@@ -27,7 +27,7 @@
     text-align: left;
 
     a.anchor::before {
-      content: "#";
+      content: "\00A7";
     }
 
     a.anchor {
@@ -129,7 +129,7 @@
 
   ul,
   ol {
-    @apply my-4;
+    @apply mb-4;
     @apply pl-4 py-0;
   }
 
@@ -143,16 +143,16 @@
   }
   
   dl {
-    @apply my-4;
+    @apply mb-4;
   }
 
   dt {
     @apply font-semibold;
-    @apply mt-1;
+    @apply mt-2;
   }
 
   dd {
-    @apply mb-1 mt-0 mx-0;
+    @apply mb-2 mt-0 mx-0;
     @apply pl-4 pr-0 py-0;
   }
 
